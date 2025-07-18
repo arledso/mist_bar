@@ -1,5 +1,5 @@
 use gtk::prelude::{ BoxExt, GtkWindowExt, OrientableExt };
-use relm4::{ gtk::{self, prelude::WidgetExt}, ComponentParts, ComponentSender, RelmWidgetExt, SimpleComponent };
+use relm4::{ gtk, ComponentParts, ComponentSender, RelmWidgetExt, SimpleComponent };
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 
 #[derive(Debug)]
