@@ -11,9 +11,8 @@
       in {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [ 
-            cargo 
-            rustc
-            rust-analyzer
+            libgcc gtk4 pkg-config
+            cargo rustc rust-analyzer 
             lazygit
           ];
         };
