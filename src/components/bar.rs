@@ -1,5 +1,6 @@
 use gtk::prelude::{ BoxExt, GtkWindowExt, OrientableExt };
-use relm4::{ gtk, ComponentParts, ComponentSender, RelmWidgetExt, SimpleComponent };
+use relm4::{ gtk::{self, prelude::WidgetExt}, ComponentParts, ComponentSender, RelmWidgetExt, SimpleComponent };
+use gtk4_layer_shell::{Edge, Layer, LayerShell};
 
 #[derive(Debug)]
 pub enum BarMsg { }
@@ -18,21 +19,27 @@ impl SimpleComponent for BarModel {
     view! {
         gtk::Window {
             set_title: Some("Simple app"),
-            set_default_width: 300,
-            set_default_height: 100,
+            init_layer_shell: (),
+            set_layer: Layer::Overlay,
+            auto_exclusive_zone_enable: (),
+            set_anchor: (Edge::Top, true),
+            set_margin: (Edge::Top, 5),
+            set_margin: (Edge::Bottom, -5),
+            set_default_width: 800,
+            set_default_height: 30,
 
             gtk::Box {
                 set_orientation: gtk::Orientation::Vertical,
                 set_spacing: 5,
                 set_margin_all: 5,
-            }
+            },
         }
     }
 
     fn init(
         counter: Self::Init,
         root: Self::Root,
-        _sender: ComponentSender<Self>,
+        sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
         let model = BarModel { counter };
         let widgets = view_output!();
