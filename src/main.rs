@@ -1,4 +1,5 @@
 mod components;
+mod widget_templates;
 
 use components::bar::BarModel;
 

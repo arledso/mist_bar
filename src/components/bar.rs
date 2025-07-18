@@ -2,6 +2,8 @@ use gtk::prelude::{ BoxExt, GtkWindowExt, OrientableExt };
 use relm4::{ gtk, ComponentParts, ComponentSender, RelmWidgetExt, SimpleComponent };
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 
+use crate::widget_templates::clock::*;
+
 #[derive(Debug)]
 pub enum BarMsg { }
 
@@ -32,6 +34,9 @@ impl SimpleComponent for BarModel {
                 set_orientation: gtk::Orientation::Vertical,
                 set_spacing: 5,
                 set_margin_all: 5,
+
+                #[template]
+                Clock {}
             },
         }
     }
