@@ -7,5 +7,5 @@ use relm4::RelmApp;
 
 fn main() {
     let app = RelmApp::new("relm4.test.simple");
-    app.run::<BarModel>(0);
+    app.run::<BarModel>(String::from("00:00am"));
 }
