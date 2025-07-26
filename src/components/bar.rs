@@ -11,7 +11,7 @@ pub enum BarMsg {
 }
 
 pub struct BarModel {
-    date_string: String,
+    time_string: String,
 }
 
 #[relm4::component(pub)]
@@ -57,7 +57,7 @@ impl SimpleComponent for BarModel {
 
                     connect_map[sender] => move |_| { 
                         let sender_clone = sender.clone();
-                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
+                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); glib::ControlFlow::Continue });
                     },
                     gtk::Label {
                         #[watch]
