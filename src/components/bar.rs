@@ -106,7 +106,7 @@ impl SimpleComponent for BarModel {
         match msg {
             BarMsg::TickClock => { 
                 self.date_string = Local::now().format("%I:%M%P").to_string(); println!("TickClock Msg Called and handled.");
-                self.time_string = Local::now().format("%a, %b %d, %Y").to_string(); println!("TickClock Msg Called and handled.");
+                self.time_string = Local::now().format(" %Y | %b %d | %a ").to_string(); println!("TickClock Msg Called and handled.");
             }
         }
     }
