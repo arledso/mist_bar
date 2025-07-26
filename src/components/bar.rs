@@ -11,12 +11,13 @@ pub enum BarMsg {
 }
 
 pub struct BarModel {
-    time_string: String,
+    pub time_string: String,
+    pub date_string: String,
 }
 
 #[relm4::component(pub)]
 impl SimpleComponent for BarModel {
-    type Init = String;
+    type Init = BarModel;
 
     type Input = BarMsg;
     type Output = ();
@@ -57,11 +58,29 @@ impl SimpleComponent for BarModel {
 
                     connect_map[sender] => move |_| { 
                         let sender_clone = sender.clone();
-                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); glib::ControlFlow::Continue });
+                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
                     },
                     gtk::Label {
                         #[watch]
                         set_label: &model.date_string,
+                        inline_css: "color: #ebdbb2",
+                        set_margin_all: 5,
+                        set_halign: gtk::Align::Center,
+                        set_hexpand: true,
+                    }
+                },
+                #[template]
+                StandardBox {
+                    set_halign: gtk::Align::Center,
+                    set_hexpand: true,
+
+                    connect_map[sender] => move |_| { 
+                        let sender_clone = sender.clone();
+                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
+                    },
+                    gtk::Label {
+                        #[watch]
+                        set_label: &model.time_string,
                         inline_css: "color: #ebdbb2",
                         set_margin_all: 5,
                         set_halign: gtk::Align::Center,
@@ -73,11 +92,11 @@ impl SimpleComponent for BarModel {
     }
 
     fn init(
-        date_string: Self::Init,
+        bar_model: Self::Init,
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = BarModel { date_string };
+        let model = bar_model;
         let widgets = view_output!();
 
         ComponentParts { model, widgets }
@@ -85,7 +104,10 @@ impl SimpleComponent for BarModel {
 
     fn update(&mut self, msg: Self::Input, _sender: ComponentSender<Self>) {
         match msg {
-            BarMsg::TickClock => { self.date_string = Local::now().format("%I:%M%P").to_string(); println!("TickClock Msg Called and handled.") }
+            BarMsg::TickClock => { 
+                self.date_string = Local::now().format("%I:%M%P").to_string(); println!("TickClock Msg Called and handled.");
+                self.time_string = Local::now().format("%a, %b %d, %Y").to_string(); println!("TickClock Msg Called and handled.");
+            }
         }
     }
 }
