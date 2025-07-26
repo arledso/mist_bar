@@ -27,7 +27,7 @@ impl SimpleComponent for BarModel {
             // Config:
             set_title: Some("Simple app"),
             inline_css: "background: #00000020; border-radius: 5px;",
-            set_default_height: 35,
+            set_default_height: 40,
 
             // Positioning Config:
             init_layer_shell: (),
