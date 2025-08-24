@@ -13,7 +13,7 @@ fn main() {
             font-size: 12px;
         }
         label {
-            font-weight: light;
+            font-weight: bold;
         }
     ");
     app.run::<BarModel>(BarModel { date_string: String::from("00:00am"), time_string: String::from("...")});

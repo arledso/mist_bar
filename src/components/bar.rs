@@ -63,7 +63,7 @@ impl SimpleComponent for BarModel {
                     gtk::Label {
                         #[watch]
                         set_label: &model.date_string,
-                        inline_css: "color: #ebdbb2",
+                        inline_css: "color: #3c3836",
                         set_margin_all: 5,
                         set_halign: gtk::Align::Center,
                         set_hexpand: true,
@@ -81,7 +81,7 @@ impl SimpleComponent for BarModel {
                     gtk::Label {
                         #[watch]
                         set_label: &model.time_string,
-                        inline_css: "color: #ebdbb2",
+                        inline_css: "color: #3c3836",
                         set_margin_all: 5,
                         set_halign: gtk::Align::Center,
                         set_hexpand: true,
