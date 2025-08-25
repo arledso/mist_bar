@@ -2,17 +2,21 @@ use gtk::{prelude::*, glib::{timeout_add_seconds, ControlFlow}};
 use relm4::prelude::*;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use chrono::prelude::*;
+use rspotify::AuthCodeSpotify;
 
 use crate::widget_templates::standard_box::StandardBox;
 
 #[derive(Debug)]
 pub enum BarMsg { 
     TickClock,
+    TickSpotifyWidget,
 }
 
 pub struct BarModel {
     pub time_string: String,
     pub date_string: String,
+    pub spotify_currently_playing_string: String,
+    pub spotify_api: AuthCodeSpotify,
 }
 
 #[relm4::component(pub)]
@@ -51,15 +55,36 @@ impl SimpleComponent for BarModel {
                 set_margin_all: 5,
                 set_halign: gtk::Align::Center,
 
+                connect_map[sender] => move |_| { 
+                    let sender_clone = sender.clone();
+                    timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
+                },
+
+                connect_map[sender] => move |_| { 
+                    let sender_clone = sender.clone();
+                    timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickSpotifyWidget); ControlFlow::Continue });
+                },
+
                 #[template]
                 StandardBox {
                     set_halign: gtk::Align::Center,
                     set_hexpand: true,
 
-                    connect_map[sender] => move |_| { 
-                        let sender_clone = sender.clone();
-                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
+                    gtk::Label {
+                        #[watch]
+                        set_label: &model.spotify_currently_playing_string,
+                        inline_css: "color: #3c3836",
+                        set_margin_all: 5,
+                        set_halign: gtk::Align::Center,
+                        set_hexpand: true,
                     },
+                },
+
+                #[template]
+                StandardBox {
+                    set_halign: gtk::Align::Center,
+                    set_hexpand: true,
+
                     gtk::Label {
                         #[watch]
                         set_label: &model.date_string,
@@ -107,6 +132,23 @@ impl SimpleComponent for BarModel {
             BarMsg::TickClock => { 
                 self.date_string = Local::now().format("%I:%M%P").to_string(); println!("TickClock Msg Called and handled.");
                 self.time_string = Local::now().format(" %Y | %b %d | %a ").to_string(); println!("TickClock Msg Called and handled.");
+            }
+            BarMsg::TickSpotifyWidget => { 
+                use crate::backend::spotify::functions;
+                
+                let item_name = functions::try_get_current_playing_item_name(&self.spotify_api);
+                match item_name {
+                    Ok(name_option) => {
+                        match name_option {
+                            Some(name) => self.spotify_currently_playing_string = name,
+                            None => self.spotify_currently_playing_string = String::from("..."),
+                        }
+                    }
+                    Err(error) => {
+                        self.spotify_currently_playing_string = String::from("error!! try running bar from cli!");
+                        println!("{}", error);
+                    }
+                }
             }
         }
     }
