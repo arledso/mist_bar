@@ -1,5 +1,7 @@
-use rspotify::{model::PlayableItem, prelude::*, scopes, AuthCodeSpotify, Credentials, OAuth};
-use anyhow::{Result as Result, anyhow};
+use std::path::PathBuf;
+
+use rspotify::{model::{PlayableItem}, prelude::*, scopes, AuthCodeSpotify, Credentials, OAuth};
+use anyhow::{anyhow, Result as Result};
 
 pub fn get_authed_spotify() -> AuthCodeSpotify {
     let creds = Credentials::from_env().unwrap();
@@ -44,4 +46,34 @@ pub fn try_get_current_playing_item_name(spotify: &AuthCodeSpotify) -> Result<Op
     }
 }
 
-// TODO: create api access to item album/track image
+pub fn try_get_current_playing_item_image_url(spotify: &AuthCodeSpotify) -> Result<Option<String>> {
+    let Some(current_user_playing_item) = try_get_current_playing_item(spotify)? else {
+        return Ok(None);
+    };
+    match current_user_playing_item {
+        PlayableItem::Track(full_track) => Ok(Some(full_track.album.images[0].url.clone())),
+        PlayableItem::Episode(full_episode) => Ok(Some(full_episode.images[0].url.clone())),
+    }
+}
+
+pub fn try_get_current_playing_item_image_in_cache(spotify: &AuthCodeSpotify) -> Result<Option<PathBuf>> {
+    let Some(url) = try_get_current_playing_item_image_url(spotify)? else {
+        return Ok(None);
+    };
+    Ok(Some(try_retrieve_or_cache_image(&url)?))
+}
+
+pub fn try_retrieve_or_cache_image(url: &str) -> Result<PathBuf> {
+    use crate::backend::xdg::caching;
+
+    match caching::find_image_from_cache(url) {
+        Some(image_path) => Ok(image_path),
+        None => {
+            caching::try_cache_spotify_image(url)?;
+            let Some(image_path) = caching::find_image_from_cache(url) else {
+                return Err(anyhow!("Failed to retreive/cache image for spotify!"));
+            };
+            Ok(image_path)
+        }
+    }
+}
