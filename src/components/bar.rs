@@ -1,4 +1,5 @@
 use gtk::{prelude::*, glib::{timeout_add_seconds, ControlFlow}};
+use std::path::PathBuf;
 use relm4::prelude::*;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use chrono::prelude::*;
@@ -17,6 +18,7 @@ pub struct BarModel {
     pub date_string: String,
     pub spotify_currently_playing_string: String,
     pub spotify_api: AuthCodeSpotify,
+    pub spotify_currently_playing_image: PathBuf,
 }
 
 #[relm4::component(pub)]
@@ -53,7 +55,6 @@ impl SimpleComponent for BarModel {
                 set_orientation: gtk::Orientation::Horizontal,
                 set_spacing: 5,
                 set_margin_all: 5,
-                set_halign: gtk::Align::Center,
 
                 connect_map[sender] => move |_| { 
                     let sender_clone = sender.clone();
@@ -67,8 +68,14 @@ impl SimpleComponent for BarModel {
 
                 #[template]
                 StandardBox {
-                    set_halign: gtk::Align::Center,
+                    set_halign: gtk::Align::Start,
                     set_hexpand: true,
+
+                    gtk::Image {
+                        #[watch]
+                        set_from_file: Some(model.spotify_currently_playing_image.clone()),
+                        inline_css: "box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px; width: 10px; border-radius: 20px; margin: 0px 2px 0px 4px;",
+                    },
 
                     gtk::Label {
                         #[watch]
@@ -80,38 +87,45 @@ impl SimpleComponent for BarModel {
                     },
                 },
 
-                #[template]
-                StandardBox {
-                    set_halign: gtk::Align::Center,
-                    set_hexpand: true,
+                gtk::Box {
+                    set_halign: gtk::Align::Start,
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 5,
 
-                    gtk::Label {
-                        #[watch]
-                        set_label: &model.date_string,
-                        inline_css: "color: #3c3836",
-                        set_margin_all: 5,
+                    #[template]
+                    StandardBox {
                         set_halign: gtk::Align::Center,
                         set_hexpand: true,
-                    }
-                },
-                #[template]
-                StandardBox {
-                    set_halign: gtk::Align::Center,
-                    set_hexpand: true,
 
-                    connect_map[sender] => move |_| { 
-                        let sender_clone = sender.clone();
-                        timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
+                        gtk::Label {
+                            #[watch]
+                            set_label: &model.date_string,
+                            inline_css: "color: #3c3836",
+                            set_margin_all: 5,
+                            set_halign: gtk::Align::Center,
+                            set_hexpand: true,
+                        }
                     },
-                    gtk::Label {
-                        #[watch]
-                        set_label: &model.time_string,
-                        inline_css: "color: #3c3836",
-                        set_margin_all: 5,
+                    #[template]
+                    StandardBox {
                         set_halign: gtk::Align::Center,
                         set_hexpand: true,
-                    }
-                },
+
+                        connect_map[sender] => move |_| { 
+                            let sender_clone = sender.clone();
+                            timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickClock); ControlFlow::Continue });
+                        },
+                        gtk::Label {
+                            #[watch]
+                            set_label: &model.time_string,
+                            inline_css: "color: #3c3836",
+                            set_margin_all: 5,
+                            set_halign: gtk::Align::Center,
+                            set_hexpand: true,
+                        }
+                    },
+
+                }
             },
         }
     }
@@ -149,7 +163,19 @@ impl SimpleComponent for BarModel {
                         println!("{}", error);
                     }
                 }
-            }
+                
+                let image_path = 
+                    functions::try_get_current_playing_item_image_in_cache(&self.spotify_api);
+                match image_path {
+                    Ok(path) => {
+                        match path {
+                            Some(image) => self.spotify_currently_playing_image = image,
+                            None => self.spotify_currently_playing_image = PathBuf::new()
+                        }
+                    },
+                    Err(error) => println!("{}", error),
+                }
+            },
         }
     }
 }
