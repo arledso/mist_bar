@@ -4,6 +4,7 @@ use relm4::prelude::*;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use chrono::prelude::*;
 use rspotify::AuthCodeSpotify;
+use cmd_lib::run_cmd;
 
 use crate::widget_templates::standard_box::StandardBox;
 
@@ -66,24 +67,38 @@ impl SimpleComponent for BarModel {
                     timeout_add_seconds(1, move || { sender_clone.input(BarMsg::TickSpotifyWidget); ControlFlow::Continue });
                 },
 
-                #[template]
-                StandardBox {
+
+                gtk::Button {
                     set_halign: gtk::Align::Start,
                     set_hexpand: true,
+                    set_margin_all: 0,
+                    inline_css: "margin: 0px; padding: 0px;",
 
-                    gtk::Image {
-                        #[watch]
-                        set_from_file: Some(model.spotify_currently_playing_image.clone()),
-                        inline_css: "box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px; width: 10px; border-radius: 20px; margin: 0px 2px 0px 4px;",
+                    connect_clicked => move |_| {
+                        run_cmd!(
+                            spotify
+                        );
                     },
 
-                    gtk::Label {
-                        #[watch]
-                        set_label: &model.spotify_currently_playing_string,
-                        inline_css: "color: #3c3836",
-                        set_margin_all: 5,
-                        set_halign: gtk::Align::Center,
+                    #[template]
+                    StandardBox {
+                        set_halign: gtk::Align::Start,
                         set_hexpand: true,
+
+                        gtk::Image {
+                            #[watch]
+                            set_from_file: Some(model.spotify_currently_playing_image.clone()),
+                            inline_css: "box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px; width: 10px; border-radius: 20px; margin: 0px 2px 0px 4px;",
+                        },
+
+                        gtk::Label {
+                            #[watch]
+                            set_label: &model.spotify_currently_playing_string,
+                            inline_css: "color: #3c3836",
+                            set_margin_all: 5,
+                            set_halign: gtk::Align::Center,
+                            set_hexpand: true,
+                        },
                     },
                 },
 
