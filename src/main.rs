@@ -1,5 +1,8 @@
 mod components;
 mod widget_templates;
+mod backend;
+
+use std::path::PathBuf;
 
 use components::bar::BarModel;
 
@@ -16,5 +19,16 @@ fn main() {
             font-weight: bold;
         }
     ");
-    app.run::<BarModel>(BarModel { date_string: String::from("00:00am"), time_string: String::from("...")});
+
+    use crate::backend::spotify::functions;
+    let bar_model = BarModel { 
+        date_string: String::from("00:00am"), 
+        time_string: String::from("..."),
+        spotify_api: functions::get_authed_spotify(),
+        spotify_currently_playing_string: String::from("..."), // TODO: change all placeholders to
+                                                              // proper values on initiation
+                                                              // please, Amen!
+        spotify_currently_playing_image: PathBuf::new(),
+    };
+    app.run::<BarModel>(bar_model);
 }
