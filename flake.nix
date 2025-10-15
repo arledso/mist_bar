@@ -25,6 +25,11 @@
           pname = "${appName}";
           version = "0.1.0";
           src = ./.;
+          buildInputs = with pkgs; [ 
+            libgcc gtk4 gtk4-layer-shell pkg-config
+            cargo rustc rust-analyzer 
+            lazygit
+          ];
         };
       };
 
