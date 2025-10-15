@@ -1,21 +1,36 @@
 {
-  inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs = { 
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; 
+    naersk.url = "github:nix-community/naersk";
   };
 
-  outputs = inputs:
-    inputs.flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = (import (inputs.nixpkgs) { inherit system; });
-      in {
-        devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [ 
-            libgcc gtk4 gtk4-layer-shell pkg-config
-            cargo rustc rust-analyzer 
-            lazygit
-          ];
+  outputs = { self, nixpkgs, naersk, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      appName = "mist_bar";
+
+      naersk' = pkgs.callPackage naersk { };
+    in {
+      devShell = pkgs.mkShell {
+        buildInputs = with pkgs; [ 
+          libgcc gtk4 gtk4-layer-shell pkg-config
+          cargo rustc rust-analyzer 
+          lazygit
+        ];
+      };
+
+      packages.${system} = {
+        ${appName} = naersk'.buildPackage {
+          pname = "${appName}";
+          version = "0.1.0";
+          src = ./.;
         };
-      }
-    );
+      };
+
+      apps.${system}.default = {
+        type = "app";
+        program = "${self.packages.${system}.${appName}}/bin/${appName}";
+      };
+    };
 }
